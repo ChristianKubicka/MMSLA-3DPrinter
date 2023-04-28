@@ -6,8 +6,8 @@ HPP = ./src/HppFiles/
 TMP = ./src/Tmp/
 EXE = printer
 
-$(EXE): $(TMP)StepperMotor.o $(TMP)BeamBreakSensor.o $(TMP)Printer.o $(TMP)ConfigurationParser.o $(CPP)PrinterRunner.cpp
-	$(CC) $(CPP)PrinterRunner.cpp $(TMP)StepperMotor.o $(TMP)BeamBreakSensor.o $(TMP)Printer.o $(TMP)ConfigurationParser.o -lwiringPi -o $(EXE) -I$(HPP)
+$(EXE): $(TMP)StepperMotor.o $(TMP)BeamBreakSensor.o $(TMP)Printer.o $(TMP)ConfigurationParser.o $(TMP)UVLamp.o $(TMP)Display.o $(CPP)PrinterRunner.cpp
+	$(CC) $(CPP)PrinterRunner.cpp $(TMP)StepperMotor.o $(TMP)BeamBreakSensor.o $(TMP)Printer.o $(TMP)UVLamp.o $(TMP)Display.o $(TMP)ConfigurationParser.o -lwiringPi -o $(EXE) -I$(HPP)
 
 $(TMP)Printer.o: $(CPP)Printer.cpp $(HPP)Printer.hpp
 	mkdir -p $(TMP)
@@ -24,6 +24,14 @@ $(TMP)StepperMotor.o: $(CPP)StepperMotor.cpp $(HPP)StepperMotor.hpp
 $(TMP)BeamBreakSensor.o: $(CPP)BeamBreakSensor.cpp $(HPP)BeamBreakSensor.hpp
 	mkdir -p $(TMP)
 	$(CC) -c $(CPP)BeamBreakSensor.cpp -o $(TMP)BeamBreakSensor.o -I$(HPP)
+
+$(TMP)UVLamp.o: $(CPP)UVLamp.cpp $(HPP)UVLamp.hpp
+	mkdir -p $(TMP)
+	$(CC) -c $(CPP)UVLamp.cpp -o $(TMP)UVLamp.o -I$(HPP)
+
+$(TMP)Display.o: $(CPP)Display.cpp $(HPP)Display.hpp
+	mkdir -p $(TMP)
+	$(CC) -c $(CPP)Display.cpp -o $(TMP)Display.o -I$(HPP)
 
 clean:
 	-rm -r $(TMP)

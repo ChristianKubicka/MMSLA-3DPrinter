@@ -1,5 +1,7 @@
 #include <Printer.hpp>
 #include <iostream>
+#include <unistd.h>
+#include <stdio.h>
 
 using namespace std;
 
@@ -9,11 +11,11 @@ int main(int argc,char* argv[])
 	// Checking if the correct number of arguments is provided
 	if(argc < 2)
 	{
-		cerr << "Usage: ./printer command [File]";
+		cerr << "Usage: ./printer command\n";
 		return 1;
 	}
 
-	// Creating Printer Object
+	// Finding the argument
 	string argument = argv[1];
 	Printer printer("Config.txt");
 
@@ -21,6 +23,15 @@ int main(int argc,char* argv[])
 	if(argument == "zero")
 	{
 		printer.UI_ZeroingRoutine();
+	}
+	else if(argument == "print")
+	{
+		printer.UI_PrintRoutine();
+	}
+	else if(argument == "manual")
+	{
+		string arg3 = argv[2];
+		printer.UI_ManualControl(stoi(arg3));
 	}
 	else
 	{

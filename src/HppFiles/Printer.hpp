@@ -5,6 +5,8 @@
 #include <ConfigurationParser.hpp>
 #include <StepperMotor.hpp>
 #include <BeamBreakSensor.hpp>
+#include <UVLamp.hpp>
+#include <Display.hpp>
 
 class Printer
 {
@@ -12,7 +14,9 @@ class Printer
 	private:
 		StepperMotor* STEPPER_MOTOR = NULL;
 		BeamBreakSensor* SENSOR = NULL;
+		UVLamp* UV_LAMP = NULL;
 		ConfigurationParser* CONFIG = NULL;
+		Display* DISPLAY = NULL;
 
 	// Constructors
 	public:
@@ -21,6 +25,8 @@ class Printer
 	// UI Functions
 	public:
 		void UI_ZeroingRoutine();
+		void UI_PrintRoutine();
+		void UI_ManualControl(int step);
 
 	// Helper Functions
 	private:

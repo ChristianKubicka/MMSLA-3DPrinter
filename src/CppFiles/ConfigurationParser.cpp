@@ -37,5 +37,6 @@ int ConfigurationParser::GetParam(string param)
 		return config[param];
 	}
 	// Throwing an Exception Otherwise
-	throw invalid_argument("Param not Defined in Configuration File.\n");
+	cout << param << "\n";
+	throw invalid_argument("Param is not Defined in Configuration File.\n");
 }
