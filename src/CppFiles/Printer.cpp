@@ -68,12 +68,10 @@ void Printer::UI_PrintRoutine()
 	for(int i = 0;i < totalLayers;i++)
 	{
 		// Notifying the User
-		printf("Printing Layer %d of %d.\n", i, totalLayers);
+		printf("Printing Layer %d of %d.\n", i+1, totalLayers);
 
-		cout << "Reached GoTo\n";
 		// Positioning the Stepper Motor
 		this->GoTo(i + 1);
-		cout << "Passed GoTo\n";
 
 		// Loading the Image
 		sprintf(buffer,"IMG_%d.png",i);
@@ -93,11 +91,14 @@ void Printer::UI_PrintRoutine()
 		this->GoTo(i + 1 + ((this->CONFIG)->GetParam("NUM_STEPS_UP")));
 
 		// Notifying the User
-		printf("Layer %d of %d Complete.\n", i, totalLayers);
+		printf("Layer %d of %d Complete.\n", i+1, totalLayers);
 	}
 
 	// Returning to start
 	this->GoToStart();
+
+	// Notifying the User that the print is complete
+	printf("Print Complete.\n");
 }
 
 void Printer::UI_TestRoutine()
