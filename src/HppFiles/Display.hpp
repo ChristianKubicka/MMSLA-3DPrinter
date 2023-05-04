@@ -19,6 +19,8 @@ class Display
 	public:
 		Display(int Buffer_Size, int Disp_Height, int Disp_Width, int Channels);
 		void DisplayImage(char* filename);
+		void DisplayTestPattern();
+		void Clear();
 
 	// Private Helper Function
 	private:

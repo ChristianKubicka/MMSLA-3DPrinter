@@ -27,6 +27,7 @@ class Printer
 		void UI_ZeroingRoutine();
 		void UI_PrintRoutine();
 		void UI_ManualControl(int step);
+		void UI_TestRoutine();
 
 	// Helper Functions
 	private:

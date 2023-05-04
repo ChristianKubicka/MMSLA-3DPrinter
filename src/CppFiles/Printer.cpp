@@ -100,6 +100,35 @@ void Printer::UI_PrintRoutine()
 	this->GoToStart();
 }
 
+void Printer::UI_TestRoutine()
+{
+	// Disabling the UV Lamp
+	this->UV_LAMP->Disable();
+
+	// Testing Stepper Motor
+	cout << "Initiating Testing\n";
+	cout << "Testing Stepper Motor\n";
+	this->STEPPER_MOTOR->Step(500, FORWARD, (this->CONFIG)->GetParam("ZERO_STEP_DELAY"));
+	this->STEPPER_MOTOR->Step(500, BACKWARD,(this->CONFIG)->GetParam("ZERO_STEP_DELAY"));
+	cout << "Stepper Motor Testing Complete\n";
+
+	// Testing Beam Break Sensor
+	cout << "Testing Beam Break Sensor\n";
+	cout << "Please Break the Beam\n";
+	while(!(this->SENSOR)->IsBroken()) delay(100);
+	cout << "Beam Broken.\nSensor Testing Complete.\n";
+
+	// Testing Display and UV Lamp
+	cout << "Testing Display and UV Lamp\n";
+	this->DISPLAY->DisplayTestPattern();
+	this->UV_LAMP->Enable(this->CONFIG->GetParam("UV_INTENSITY"));
+	delay(5000);
+	this->DISPLAY->Clear();
+	this->UV_LAMP->Disable();
+	cout << "UV Lamp Testing Complete\n";
+	cout << "Testing Complete\n";
+}
+
 
 // UI Routines for User Interaction
 void Printer::UI_ZeroingRoutine()

@@ -20,6 +20,56 @@ Display::Display(int Buff_Size, int Disp_Height, int Disp_Width, int Channels)
 	this->DisplayBuffer = new char[this->BUFFER_SIZE];
 }
 
+void Display::Clear()
+{
+        for(int y = 0;y < this->DISP_HEIGHT;y++)
+        {
+                for(int x = 0;x < this->DISP_WIDTH;x++)
+                {
+                        // Getting Necessary Offsets
+                        int dispBuffOff = getDispOff(x,y);
+
+			// Setting Display to Black
+                        this->DisplayBuffer[dispBuffOff] = this->getColorUpper(0,0,0);
+                        this->DisplayBuffer[dispBuffOff + 1] = this->getColorLower(0,0,0);
+                }
+        }
+
+        // Displaying
+        int fildes = open("/dev/fb0", O_WRONLY);
+        write(fildes, this->DisplayBuffer, this->BUFFER_SIZE);
+        close(fildes);
+}
+
+void Display::DisplayTestPattern()
+{
+	for(int y = 0;y < this->DISP_HEIGHT;y++)
+	{
+		for(int x = 0;x < this->DISP_WIDTH;x++)
+		{
+			// Getting Necessary Offsets
+			int dispBuffOff = getDispOff(x,y);
+
+			// Completing Buffer Assignments
+			if(((x/100)%2) == 0)
+			{
+				this->DisplayBuffer[dispBuffOff] = this->getColorUpper(0,0,0);
+				this->DisplayBuffer[dispBuffOff + 1] = this->getColorLower(0,0,0);
+			}
+			else
+			{
+				this->DisplayBuffer[dispBuffOff] = this->getColorUpper(255,255,255);
+				this->DisplayBuffer[dispBuffOff + 1] = this->getColorLower(255,255,255);
+			}
+		}
+	}
+
+	// Displaying
+	int fildes = open("/dev/fb0", O_WRONLY);
+	write(fildes, this->DisplayBuffer, this->BUFFER_SIZE);
+	close(fildes);
+}
+
 void Display::DisplayImage(char* filename)
 {
 	// Getting the image
