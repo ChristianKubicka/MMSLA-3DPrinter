@@ -16,21 +16,21 @@ screen_length_mm = 6.23 * 25.4
 screen_height_mm = math.sqrt((screen_length_mm * screen_length_mm) / (1 + (screen_aspect_ratio * screen_aspect_ratio)))
 screen_width_mm = screen_height_mm * screen_aspect_ratio
 pixel_pitch = screen_width_mm / horizontal_resolution
-layer_width_mm = 0.100
+layer_width_mm = 0.010
 origin_x = -1 * screen_width_mm / 2
 origin_y = -1 * screen_height_mm / 2
 
 
 def main():
     # Getting command-line arguments
-    args = parse_arguments()
+    # args = parse_arguments()
 
     # Loading a mesh and getting the units
-    mesh = trimesh.load_mesh(args[0])
+    mesh = trimesh.load_mesh("3dbenchy.stl")
     mesh, units = as_mesh_with_units(mesh)
 
     # Slicing the model
-    layer_count = slice_mesh(mesh, args[1])
+    layer_count = slice_mesh(mesh, "TestPrint")
     print("Layer Count: " + str(layer_count))
 
 
