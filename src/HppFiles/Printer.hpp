@@ -28,11 +28,14 @@ class Printer
 		void UI_PrintRoutine();
 		void UI_ManualControl(int step);
 		void UI_TestRoutine();
+		void UI_Estimate();
 
 	// Helper Functions
 	private:
 		void Zero();
 		void GoTo(int step);
 		void GoToStart();
+		int EstimateTimeMs();
+		void PrintTime(int ms);
 };
 #endif

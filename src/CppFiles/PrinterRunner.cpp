@@ -28,6 +28,10 @@ int main(int argc,char* argv[])
 	{
 		printer.UI_PrintRoutine();
 	}
+	else if(argument == "estimate")
+	{
+		printer.UI_Estimate();
+	}
 	else if(argument == "test")
 	{
 		printer.UI_TestRoutine();
