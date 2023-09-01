@@ -11,7 +11,14 @@ int main(int argc,char* argv[])
 	// Checking if the correct number of arguments is provided
 	if(argc < 2)
 	{
-		cerr << "Usage: ./printer command\n";
+		string output_str = "Usage: ./printer command\n";
+		output_str += "Acceptable Commands: \n";
+		output_str += "zero - Zero the printer.\n";
+		output_str += "print - Initiate a print.\n";
+		output_str += "estimate - Estimate the length of a print.\n";
+		output_str += "test - Initiate the printer test routine.\n";
+		output_str += "manual <value> - Move the printer <value> number of steps\n";
+		cerr << output_str;
 		return 1;
 	}
 

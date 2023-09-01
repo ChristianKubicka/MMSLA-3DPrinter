@@ -73,8 +73,11 @@ void Printer::UI_PrintRoutine()
 		// Notifying the User
 		printf("Printing Layer %d of %d.            ", i+1, totalLayers);
 
+		// Determining the Correct Stepper Motor Position
+		int step_motor_pos = (i + 1) * ((this->CONFIG)->GetParam("STEPS_PER_LAYER"));
+
 		// Positioning the Stepper Motor
-		this->GoTo(i + 1);
+		this->GoTo(step_motor_pos);
 
 		// Loading the Image
 		sprintf(buffer,"IMG_%d.png",i);
@@ -91,7 +94,7 @@ void Printer::UI_PrintRoutine()
 		(this->UV_LAMP)->Disable();
 
 		// Cycling to introduce new resin
-		this->GoTo(i + 1 + ((this->CONFIG)->GetParam("NUM_STEPS_UP")));
+		this->GoTo(step_motor_pos + ((this->CONFIG)->GetParam("NUM_STEPS_UP")));
 	}
 
 	// Returning to start
@@ -150,7 +153,7 @@ void Printer::UI_ZeroingRoutine()
 	cout << "Zeroing Routine Complete.\n";
 }
 
-int Printer::UI_Estimate()
+void Printer::UI_Estimate()
 {
 	int estimate = EstimateTimeMs();
 	this->PrintTime(estimate);
@@ -171,37 +174,37 @@ int Printer::EstimateTimeMs()
 	int num_steps_up = (this->CONFIG)->GetParam("NUM_STEPS_UP");
 
 	// Adding time to first layer
-	printMs = printMs + ((init_step * goto_step_delay)/1000);
+	printMs += (init_step * goto_step_delay)/1000;
 
 	// Adding Base Layer Time
-	printMs = printMs + (numBaseLayers * (base_layer_ms + ((goto_step_delay * (num_steps_up + (num_steps_up - 1)))/1000)));
+	printMs += (numBaseLayers * (base_layer_ms + ((goto_step_delay * (num_steps_up + (num_steps_up - 1)))/1000)));
 
 	// Adding Normal Layer Time
-	printMs = printMs + (numNormLayers * (norm_layer_ms + ((goto_step_delay * (num_steps_up + (num_steps_up - 1)))/1000)));
+	printMs += (numNormLayers * (norm_layer_ms + ((goto_step_delay * (num_steps_up + (num_steps_up - 1)))/1000)));
 
 	// Adding return to start print time
-	printMs = printMs + (((init_step - (numNormLayers + numBaseLayers)) * goto_step_delay)/1000);
+	printMs += ((init_step - (numNormLayers + numBaseLayers)) * goto_step_delay)/1000;
 
 	// Returning Time
 	return printMs;
 }
 
-int Printer::PrintTime(int ms)
+void Printer::PrintTime(int ms)
 {
 	// Computing the number of hours in the interval
 	int hours = ms / 3600000;
-	ms -= ms / 3600000;
+	ms -= (hours * 3600000);
 
 	// Computing the number of minutes in the interval
 	int minutes = ms / 60000;
-	ms -= ms / 60000;
+	ms -= (minutes * 60000);
 
 	// Computing the number of seconds in the interval
 	int seconds = ms / 1000;
-	ms -= ms /1000;
+	ms -= (seconds * 1000);
 
 	// Printing the result
-	printf("Estimate: %d:%d:%d.%d\n", hours, minutes, seconds, ms);
+	printf("Estimate: %02d:%02d:%02d.%d\n", hours, minutes, seconds, ms);
 }
 
 
