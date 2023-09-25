@@ -21,6 +21,7 @@ Printer::Printer(string ConfigurationFile)
 
 	// Initializing Stepper Motor
 	this->STEPPER_MOTOR = new StepperMotor((this->CONFIG)->GetParam("STEP_PIN"), (this->CONFIG)->GetParam("DIR_PIN"), (this->CONFIG)->GetParam("INIT_STEP"));
+	this->VAT_STEPPER_MOTOR = new StepperMotor((this->CONFIG)->GetParam("VAT_STEP_PIN"), (this->CONFIG)->GetParam("VAT_DIR_PIN"), (this->CONFIG)->GetParam("VAT_INIT_STEP"));
 
 	// Initializing Beam Break Sensor
 	this->SENSOR = new BeamBreakSensor((this->CONFIG)->GetParam("SENSOR_PIN"));
@@ -54,6 +55,80 @@ void Printer::UI_ManualControl(int step)
 
 }
 
+void Printer::UI_VatManualControl(int step)
+{
+	// Disabling UV
+	this->UV_LAMP->Disable();
+
+	// Setting the Direction
+	int dir;
+	if(step > 0) dir = BACKWARD;
+	else
+	{
+		step = -1 * step;
+		dir = FORWARD;
+	}
+
+	for(int i = 0;i < step;i++)
+	{
+		this->VAT_STEPPER_MOTOR->Step(1,dir, this->CONFIG->GetParam("VAT_STEP_DELAY"));
+	}
+}
+
+void Printer::UI_PrintRoutineMM()
+{
+	// Creating a buffer to hold all necessary strings
+	char buffer[200];
+
+	// Accessing Necessary Values
+	int numBaseLayers = (this->CONFIG)->GetParam("NUM_BASE_LAYERS");
+	int numNormLayers = (this->CONFIG)->GetParam("NUM_NORM_LAYERS");
+	int totalLayers = numBaseLayers + numNormLayers;
+	bool imageExists;
+
+	// Estimating the print time
+	int printTimeMs = EstimateTimeMs();
+
+	// Beginning the Print
+	for(int i = 0;i < totalLayers;i++)
+	{
+		// Loading the Image
+		sprintf(buffer, "IMG_%d_A.png",i);
+		imageExists = (this->DISPLAY)->DisplayImage(buffer);
+
+		if(imageExists)
+		{
+			// Printing the First Material
+			this->VatGoTo((this->CONFIG)->GetParam("MATERIAL_1_STEP"));
+
+			// Exposing the Image
+			this->ExposeLayer(i, numBaseLayers);
+		}
+
+		// Loading the Image
+		sprintf(buffer, "IMG_%d_B.png",i);
+		imageExists = (this->DISPLAY)->DisplayImage(buffer);
+
+		if(imageExists)
+		{
+			// Printing the First Material
+			this->VatGoTo((this->CONFIG)->GetParam("MATERIAL_2_STEP"));
+
+			// Exposing the Image
+			this->ExposeLayer(i, numBaseLayers);
+		}
+	}
+
+	// Returning to start
+	this->GoToStart();
+
+	// Notifying the User that the print is complete
+	printf("Print Complete.\n");
+}
+
+
+
+
 void Printer::UI_PrintRoutine()
 {
 	// Creating a buffer to hold all necessary strings
@@ -71,10 +146,13 @@ void Printer::UI_PrintRoutine()
 	for(int i = 0;i < totalLayers;i++)
 	{
 		// Notifying the User
-		printf("Printing Layer %d of %d.            ", i+1, totalLayers);
+		printf("Printing Layer %d of %d.            \r", i+1, totalLayers);
+
+		// Determining the Correct Stepper Motor Position
+		int step_motor_pos = (i + 1) * ((this->CONFIG)->GetParam("STEPS_PER_LAYER"));
 
 		// Positioning the Stepper Motor
-		this->GoTo(i + 1);
+		this->GoTo(step_motor_pos);
 
 		// Loading the Image
 		sprintf(buffer,"IMG_%d.png",i);
@@ -91,7 +169,7 @@ void Printer::UI_PrintRoutine()
 		(this->UV_LAMP)->Disable();
 
 		// Cycling to introduce new resin
-		this->GoTo(i + 1 + ((this->CONFIG)->GetParam("NUM_STEPS_UP")));
+		this->GoTo(step_motor_pos + ((this->CONFIG)->GetParam("NUM_STEPS_UP")));
 	}
 
 	// Returning to start
@@ -150,7 +228,7 @@ void Printer::UI_ZeroingRoutine()
 	cout << "Zeroing Routine Complete.\n";
 }
 
-int Printer::UI_Estimate()
+void Printer::UI_Estimate()
 {
 	int estimate = EstimateTimeMs();
 	this->PrintTime(estimate);
@@ -171,37 +249,37 @@ int Printer::EstimateTimeMs()
 	int num_steps_up = (this->CONFIG)->GetParam("NUM_STEPS_UP");
 
 	// Adding time to first layer
-	printMs = printMs + ((init_step * goto_step_delay)/1000);
+	printMs += (init_step * goto_step_delay)/1000;
 
 	// Adding Base Layer Time
-	printMs = printMs + (numBaseLayers * (base_layer_ms + ((goto_step_delay * (num_steps_up + (num_steps_up - 1)))/1000)));
+	printMs += (numBaseLayers * (base_layer_ms + ((goto_step_delay * (num_steps_up + (num_steps_up - 1)))/1000)));
 
 	// Adding Normal Layer Time
-	printMs = printMs + (numNormLayers * (norm_layer_ms + ((goto_step_delay * (num_steps_up + (num_steps_up - 1)))/1000)));
+	printMs += (numNormLayers * (norm_layer_ms + ((goto_step_delay * (num_steps_up + (num_steps_up - 1)))/1000)));
 
 	// Adding return to start print time
-	printMs = printMs + (((init_step - (numNormLayers + numBaseLayers)) * goto_step_delay)/1000);
+	printMs += ((init_step - (numNormLayers + numBaseLayers)) * goto_step_delay)/1000;
 
 	// Returning Time
 	return printMs;
 }
 
-int Printer::PrintTime(int ms)
+void Printer::PrintTime(int ms)
 {
 	// Computing the number of hours in the interval
 	int hours = ms / 3600000;
-	ms -= ms / 3600000;
+	ms -= (hours * 3600000);
 
 	// Computing the number of minutes in the interval
 	int minutes = ms / 60000;
-	ms -= ms / 60000;
+	ms -= (minutes * 60000);
 
 	// Computing the number of seconds in the interval
 	int seconds = ms / 1000;
-	ms -= ms /1000;
+	ms -= (seconds * 1000);
 
 	// Printing the result
-	printf("Estimate: %d:%d:%d.%d\n", hours, minutes, seconds, ms);
+	printf("Estimate: %02d:%02d:%02d.%d\n", hours, minutes, seconds, ms);
 }
 
 
@@ -223,7 +301,32 @@ void Printer::GoTo(int step)
 	(this->STEPPER_MOTOR)->GoToStep(step, (this->CONFIG)->GetParam("GOTO_STEP_DELAY"));
 }
 
+void Printer::VatGoTo(int step)
+{
+	(this->VAT_STEPPER_MOTOR)->GoToStep(step, (this->CONFIG)->GetParam("VAT_STEP_DELAY"));
+}
+
 void Printer::GoToStart()
 {
 	(this->STEPPER_MOTOR)->GoToStep((this->CONFIG)->GetParam("INIT_STEP"), (this->CONFIG)->GetParam("GOTO_STEP_DELAY"));
+}
+
+void Printer::ExposeLayer(int layer, int numBaseLayers)
+{
+	// Determining the Correct Stepper Motor Position and Positioning
+	int step_motor_pos = (layer + 1) * ((this->CONFIG)->GetParam("STEPS_PER_LAYER"));
+	this->GoTo(step_motor_pos);
+
+	// Exposing the Image
+	(this->UV_LAMP)->Enable((this->CONFIG)->GetParam("UV_INTENSITY"));
+
+	// Delaying According to Layer Settings
+	if(layer < numBaseLayers)  delay((this->CONFIG)->GetParam("BASE_LAYER_MS"));
+	else		       delay((this->CONFIG)->GetParam("NORM_LAYER_MS"));
+
+	// Ending Image Exposure
+	(this->UV_LAMP)->Disable();
+
+	// Cycling to Introduce New Resin
+	this->GoTo(step_motor_pos + ((this->CONFIG)->GetParam("NUM_STEPS_UP")));
 }

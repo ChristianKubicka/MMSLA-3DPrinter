@@ -70,11 +70,13 @@ void Display::DisplayTestPattern()
 	close(fildes);
 }
 
-void Display::DisplayImage(char* filename)
+bool Display::DisplayImage(char* filename)
 {
 	// Getting the image
 	int width, height, bpp;
 	uint8_t* img = stbi_load(filename, &width, &height, &bpp, 0);
+	uint8_t lower, upper;
+	bool return_value = false;
 
 	// Converting Image to Display
 	for(int y = 0;y < this->DISP_HEIGHT;y++)
@@ -85,8 +87,16 @@ void Display::DisplayImage(char* filename)
 			int dispBuffOff = getDispOff(x,y);
 
 			// Completing Buffer Assignments 16-bit color
-			this->DisplayBuffer[dispBuffOff]   = this->getUpper(img, x, y, width, height, bpp);
-			this->DisplayBuffer[dispBuffOff+1] = this->getLower(img, x, y, width, height, bpp);
+			lower = this->getLower(img, x, y, width, height, bpp);
+			upper = this->getUpper(img, x, y, width, height, bpp);
+			this->DisplayBuffer[dispBuffOff]   = upper;
+			this->DisplayBuffer[dispBuffOff+1] = lower;
+
+			// Checking if a color exists
+			if(return_value || lower != 0 || upper != 0)
+			{
+				return_value = true;
+			}
 		}
 	}
 
@@ -97,6 +107,9 @@ void Display::DisplayImage(char* filename)
 
 	// Freeing the image
 	stbi_image_free(img);
+
+	// Returning the return value
+	return return_value;
 }
 
 int Display::getDispOff(int x, int y)
