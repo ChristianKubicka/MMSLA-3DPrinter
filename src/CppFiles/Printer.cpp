@@ -151,6 +151,9 @@ void Printer::UI_PrintRoutine()
 		// Determining the Correct Stepper Motor Position
 		int step_motor_pos = (i + 1) * ((this->CONFIG)->GetParam("STEPS_PER_LAYER"));
 
+		// Determining the Correct Stepper Motor Position
+		int step_motor_pos = (i + 1) * ((this->CONFIG)->GetParam("STEPS_PER_LAYER"));
+
 		// Positioning the Stepper Motor
 		this->GoTo(step_motor_pos);
 
